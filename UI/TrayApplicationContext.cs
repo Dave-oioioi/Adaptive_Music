@@ -132,6 +132,19 @@ public sealed class TrayApplicationContext : ApplicationContext
             return;
         }
 
+        var confirm = MessageBox.Show(
+            "将以下正在发声的应用加入“会被降低音量的应用”列表：\r\n\r\n" +
+            string.Join("\r\n", audible) +
+            "\r\n\r\n确认这些都是音乐播放器吗？",
+            "确认添加音乐应用",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
+        if (confirm != DialogResult.Yes)
+        {
+            return;
+        }
+
         AddMusicProcesses(audible);
         MessageBox.Show("已添加音乐程序：\r\n" + string.Join("\r\n", audible), "自适应音乐");
     }
