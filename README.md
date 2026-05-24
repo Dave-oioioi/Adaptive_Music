@@ -29,8 +29,13 @@ Adaptive Music is a Windows tray app that lowers selected music apps when other 
   "restoreDelayMs": 1500,
   "pollIntervalMs": 150,
   "fadeStepMs": 35,
+  "useFade": true,
   "fadeDurationMs": 280,
-  "duckOnMicrophone": true
+  "duckOnMicrophone": true,
+  "duckOnTyping": true,
+  "typingTriggerProcesses": ["TextInputHost"],
+  "themeMode": "System",
+  "normalMusicVolumes": {}
 }
 ```
 
@@ -53,20 +58,30 @@ dotnet build
 dotnet run
 ```
 
-Double-click the tray icon to open the control window.
+双击托盘图标可以打开控制台窗口。
 
-The control window includes:
+控制台窗口包含：
 
-- Current listening/ducking state and active audio devices.
-- Enable/pause switch.
-- Duck volume slider.
-- Music target list with scan, add, and remove controls.
-- Active trigger list.
-- Live audio session table with process, peak, volume, and role.
+- 当前监听/压低状态和正在使用的音频设备。
+- 启用/暂停开关。
+- 打字键入时降低音乐开关，用于覆盖输入法、键入相关触发。
+- 麦克风输入时降低音乐开关，用于覆盖语音输入、通话、录音等麦克风输入。
+- 压低后音量滑块。
+- 音量渐变开关和渐变时长滑块。
+- 开机自启、外观模式、打开/重载配置和恢复默认设置。
+- “会被降低音量的应用”列表，以及扫描、添加、移除按钮。
+- “其他声音触发源”列表。
+- 实时音频会话表，显示进程、峰值、音量和角色。
 
-Tray actions:
+托盘菜单已简化，只保留：
 
-- `Scan Audible Apps as Music`: start music playback first, then run this to add audible apps as music targets.
-- `Add Music Process...`: search running processes and add selected apps as music targets.
-- `Duck Volume`: set the target volume percentage used while ducking.
-- `Open Config JSON`: edit advanced settings directly.
+- `打开控制台`
+- `退出`
+
+其他功能都集中在控制台窗口内：
+
+- `扫描发声`：先播放音乐，再扫描，把当前发声应用加入音乐目标。
+- `手动添加`：搜索当前运行中的程序，并手动加入音乐目标。
+- `移除选中`：从音乐目标列表移除选中的程序。
+- `打开配置`：直接编辑高级配置。
+- `重载配置`：重新读取配置文件。

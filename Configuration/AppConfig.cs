@@ -15,8 +15,13 @@ public sealed class AppConfig
     public int RestoreDelayMs { get; set; } = 1500;
     public int PollIntervalMs { get; set; } = 150;
     public int FadeStepMs { get; set; } = 35;
+    public bool UseFade { get; set; } = true;
     public int FadeDurationMs { get; set; } = 280;
     public bool DuckOnMicrophone { get; set; } = true;
+    public bool DuckOnTyping { get; set; } = true;
+    public List<string> TypingTriggerProcesses { get; set; } = ["TextInputHost"];
+    public Dictionary<string, float> NormalMusicVolumes { get; set; } = [];
+    public string ThemeMode { get; set; } = "System";
 
     [JsonIgnore]
     public static string ConfigDirectory =>

@@ -6,7 +6,7 @@ public sealed class PercentInputForm : Form
 
     public PercentInputForm(float currentValue)
     {
-        Text = "Duck Volume";
+        Text = "压低后音量";
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -16,7 +16,7 @@ public sealed class PercentInputForm : Form
 
         var label = new Label
         {
-            Text = "Lower music to this volume:",
+            Text = "音乐压低到这个音量：",
             Dock = DockStyle.Top,
             Height = 36,
             Padding = new Padding(12, 10, 12, 0)
@@ -36,10 +36,10 @@ public sealed class PercentInputForm : Form
             Padding = new Padding(8)
         };
 
-        var ok = new Button { Text = "Save", Width = 88 };
+        var ok = new Button { Text = "保存", Width = 88 };
         ok.Click += (_, _) => DialogResult = DialogResult.OK;
 
-        var cancel = new Button { Text = "Cancel", Width = 88 };
+        var cancel = new Button { Text = "取消", Width = 88 };
         cancel.Click += (_, _) => DialogResult = DialogResult.Cancel;
 
         footer.Controls.Add(ok);

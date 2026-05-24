@@ -9,6 +9,7 @@ public sealed class AdaptiveMusicService : IDisposable
     private readonly System.Windows.Forms.Timer _timer;
     private readonly Dictionary<string, AudioSessionHandle> _sessions = [];
     private readonly Dictionary<string, float> _originalVolumes = [];
+    private readonly HashSet<string> _restoringSessions = [];
     private readonly Dictionary<string, CancellationTokenSource> _fadeJobs = [];
     private MMDeviceEnumerator? _enumerator;
     private MMDevice? _renderDevice;
@@ -44,9 +45,25 @@ public sealed class AdaptiveMusicService : IDisposable
             .ToList();
     }
 
+    public IReadOnlyList<string> GetMixerProcessNames()
+    {
+        EnsureDevices();
+        RefreshSessions();
+
+        return _sessions.Values
+            .Where(session => !session.IsSystemSounds)
+            .Select(session => NormalizeProcessName(session.ProcessName))
+            .Where(name => !string.IsNullOrWhiteSpace(name) && !ProcessMatches(name, "AdaptiveMusic"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name)
+            .ToList();
+    }
+
     public void Start()
     {
         EnsureDevices();
+        RefreshSessions();
+        HealRememberedMusicVolumes();
         _timer.Start();
         Tick();
     }
@@ -164,11 +181,13 @@ public sealed class AdaptiveMusicService : IDisposable
         foreach (var session in _sessions.Values.ToList())
         {
             var processName = NormalizeProcessName(session.ProcessName);
-            var isMusic = Config.MusicProcesses.Any(target => ProcessMatches(processName, target));
+            var isMusic = IsConfiguredMusicTarget(session);
             var ignored = Config.IgnoredTriggerProcesses.Any(target => ProcessMatches(processName, target));
+            var isTypingTrigger = Config.TypingTriggerProcesses.Any(target => ProcessMatches(processName, target));
             var isTrigger = Config.Enabled
                 && !isMusic
                 && !ignored
+                && (Config.DuckOnTyping || !isTypingTrigger)
                 && !session.IsSystemSounds
                 && !session.Muted
                 && session.Peak >= Config.TriggerThreshold;
@@ -202,7 +221,7 @@ public sealed class AdaptiveMusicService : IDisposable
             _lastTriggerUtc = DateTime.UtcNow;
             DuckTargets(musicTargets);
         }
-        else if (_ducking && DateTime.UtcNow - _lastTriggerUtc >= TimeSpan.FromMilliseconds(Config.RestoreDelayMs))
+        else if ((_ducking || _originalVolumes.Count > 0) && DateTime.UtcNow - _lastTriggerUtc >= TimeSpan.FromMilliseconds(Config.RestoreDelayMs))
         {
             RestoreTargets(force: false);
         }
@@ -225,6 +244,11 @@ public sealed class AdaptiveMusicService : IDisposable
 
         foreach (var target in targets)
         {
+            if (!CanWriteSessionVolume(target))
+            {
+                continue;
+            }
+
             if (target.Volume <= 0.02f)
             {
                 continue;
@@ -232,17 +256,21 @@ public sealed class AdaptiveMusicService : IDisposable
 
             if (!_originalVolumes.ContainsKey(target.Id))
             {
-                _originalVolumes[target.Id] = target.Volume;
+                _originalVolumes[target.Id] = ResolveOriginalVolume(target);
             }
 
+            _restoringSessions.Remove(target.Id);
             var destination = Math.Min(_originalVolumes[target.Id], Config.DuckVolume);
-            FadeTo(target, destination);
+            if (Math.Abs(target.Volume - destination) > 0.01f)
+            {
+                FadeTo(target, destination);
+            }
         }
     }
 
     private void RestoreTargets(bool force)
     {
-        if (!_ducking && !force)
+        if (!_ducking && !force && _originalVolumes.Count == 0)
         {
             return;
         }
@@ -255,7 +283,26 @@ public sealed class AdaptiveMusicService : IDisposable
                 continue;
             }
 
-            FadeTo(session, pair.Value, removeOriginalWhenDone: true);
+            if (!CanWriteSessionVolume(session))
+            {
+                _originalVolumes.Remove(pair.Key);
+                _restoringSessions.Remove(pair.Key);
+                continue;
+            }
+
+            if (force)
+            {
+                CancelFade(session.Id);
+                session.SetVolume(pair.Value);
+                _originalVolumes.Remove(pair.Key);
+                _restoringSessions.Remove(pair.Key);
+                RememberNormalVolume(session, pair.Value);
+            }
+            else if (!_restoringSessions.Contains(pair.Key) || Math.Abs(session.Volume - pair.Value) > 0.02f)
+            {
+                _restoringSessions.Add(pair.Key);
+                FadeTo(session, pair.Value, removeOriginalWhenDone: true);
+            }
         }
 
         _ducking = false;
@@ -264,6 +311,18 @@ public sealed class AdaptiveMusicService : IDisposable
     private void FadeTo(AudioSessionHandle session, float targetVolume, bool removeOriginalWhenDone = false)
     {
         CancelFade(session.Id);
+
+        if (!Config.UseFade || Config.FadeDurationMs <= 0)
+        {
+            session.SetVolume(targetVolume);
+            if (removeOriginalWhenDone)
+            {
+                RememberNormalVolume(session, targetVolume);
+                _originalVolumes.Remove(session.Id);
+                _restoringSessions.Remove(session.Id);
+            }
+            return;
+        }
 
         var sourceVolume = session.Volume;
         var duration = Math.Max(Config.FadeStepMs, Config.FadeDurationMs);
@@ -286,15 +345,27 @@ public sealed class AdaptiveMusicService : IDisposable
                 session.SetVolume(targetVolume);
                 if (removeOriginalWhenDone)
                 {
+                    RememberNormalVolume(session, targetVolume);
                     _originalVolumes.Remove(session.Id);
+                    _restoringSessions.Remove(session.Id);
                 }
             }
             catch (OperationCanceledException)
             {
             }
+            catch
+            {
+                if (removeOriginalWhenDone)
+                {
+                    _restoringSessions.Remove(session.Id);
+                }
+            }
             finally
             {
-                _fadeJobs.Remove(session.Id);
+                if (_fadeJobs.TryGetValue(session.Id, out var current) && ReferenceEquals(current, cts))
+                {
+                    _fadeJobs.Remove(session.Id);
+                }
                 cts.Dispose();
             }
         });
@@ -319,6 +390,59 @@ public sealed class AdaptiveMusicService : IDisposable
         }
     }
 
+    private float ResolveOriginalVolume(AudioSessionHandle target)
+    {
+        var currentVolume = target.Volume;
+        var processName = NormalizeProcessName(target.ProcessName);
+
+        if (currentVolume > Config.DuckVolume + 0.05f)
+        {
+            RememberNormalVolume(target, currentVolume);
+            return currentVolume;
+        }
+
+        if (Config.NormalMusicVolumes.TryGetValue(processName, out var rememberedVolume) && rememberedVolume > Config.DuckVolume + 0.05f)
+        {
+            return Math.Clamp(rememberedVolume, 0f, 1f);
+        }
+
+        return currentVolume;
+    }
+
+    private void RememberNormalVolume(AudioSessionHandle session, float volume)
+    {
+        if (volume <= Config.DuckVolume + 0.05f)
+        {
+            return;
+        }
+
+        var processName = NormalizeProcessName(session.ProcessName);
+        if (string.IsNullOrWhiteSpace(processName))
+        {
+            return;
+        }
+
+        Config.NormalMusicVolumes[processName] = Math.Clamp(volume, 0f, 1f);
+        Config.Save();
+    }
+
+    private void HealRememberedMusicVolumes()
+    {
+        foreach (var session in _sessions.Values.ToList())
+        {
+            var processName = NormalizeProcessName(session.ProcessName);
+            if (!CanWriteSessionVolume(session) || !Config.NormalMusicVolumes.TryGetValue(processName, out var rememberedVolume))
+            {
+                continue;
+            }
+
+            if (rememberedVolume > Config.DuckVolume + 0.05f && session.Volume <= Config.DuckVolume + 0.03f)
+            {
+                session.SetVolume(Math.Clamp(rememberedVolume, 0f, 1f));
+            }
+        }
+    }
+
     private void ResetDevices()
     {
         foreach (var session in _sessions.Values)
@@ -328,6 +452,7 @@ public sealed class AdaptiveMusicService : IDisposable
 
         _sessions.Clear();
         _originalVolumes.Clear();
+        _restoringSessions.Clear();
         _renderDevice?.Dispose();
         _captureDevice?.Dispose();
         _enumerator?.Dispose();
@@ -350,6 +475,26 @@ public sealed class AdaptiveMusicService : IDisposable
     {
         var name = NormalizeProcessName(session.ProcessName);
         return string.IsNullOrWhiteSpace(session.DisplayName) ? name : $"{name} - {session.DisplayName}";
+    }
+
+    private bool IsConfiguredMusicTarget(AudioSessionHandle session)
+    {
+        var processName = NormalizeProcessName(session.ProcessName);
+        return Config.MusicProcesses.Any(target => ProcessMatches(processName, target));
+    }
+
+    private bool IsIgnoredProcess(AudioSessionHandle session)
+    {
+        var processName = NormalizeProcessName(session.ProcessName);
+        return Config.IgnoredTriggerProcesses.Any(target => ProcessMatches(processName, target));
+    }
+
+    private bool CanWriteSessionVolume(AudioSessionHandle session)
+    {
+        return !session.IsSystemSounds
+            && !session.IsExpired
+            && !IsIgnoredProcess(session)
+            && IsConfiguredMusicTarget(session);
     }
 
     private static bool ProcessMatches(string processName, string pattern)
