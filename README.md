@@ -53,7 +53,16 @@ dotnet build
 dotnet run
 ```
 
-Double-click the tray icon to open the live status window.
+Double-click the tray icon to open the control window.
+
+The control window includes:
+
+- Current listening/ducking state and active audio devices.
+- Enable/pause switch.
+- Duck volume slider.
+- Music target list with scan, add, and remove controls.
+- Active trigger list.
+- Live audio session table with process, peak, volume, and role.
 
 Tray actions:
 

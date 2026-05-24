@@ -15,6 +15,8 @@ public sealed class TrayApplicationContext : ApplicationContext
     {
         _config = AppConfig.LoadOrCreate();
         _statusForm = new StatusForm();
+        WireStatusFormEvents();
+        _statusForm.ApplyConfig(_config);
         _service = new AdaptiveMusicService(_config);
         _service.StateChanged += ServiceOnStateChanged;
 
@@ -71,7 +73,27 @@ public sealed class TrayApplicationContext : ApplicationContext
         _statusForm.Show();
         _statusForm.WindowState = FormWindowState.Normal;
         _statusForm.Activate();
+        _statusForm.ApplyConfig(_config);
         _statusForm.UpdateState(_service.State);
+    }
+
+    private void WireStatusFormEvents()
+    {
+        _statusForm.EnabledChangedByUser += (_, enabled) =>
+        {
+            _config.Enabled = enabled;
+            SaveAndApplyConfig();
+        };
+        _statusForm.DuckVolumeChangedByUser += (_, duckVolume) =>
+        {
+            _config.DuckVolume = duckVolume;
+            SaveAndApplyConfig(rebuildMenu: false);
+        };
+        _statusForm.ScanAudibleRequested += (_, _) => ScanAudibleApps();
+        _statusForm.AddProcessRequested += (_, _) => AddMusicProcess();
+        _statusForm.RemoveMusicTargetRequested += (_, process) => RemoveMusicProcess(process);
+        _statusForm.OpenConfigRequested += (_, _) => _config.OpenInEditor();
+        _statusForm.ReloadConfigRequested += (_, _) => ReloadConfig();
     }
 
     private void ScanAudibleApps()
@@ -120,6 +142,13 @@ public sealed class TrayApplicationContext : ApplicationContext
         _config.Save();
         _service.ReloadConfig(_config);
         _notifyIcon.ContextMenuStrip = BuildMenu();
+        _statusForm.ApplyConfig(_config);
+    }
+
+    private void RemoveMusicProcess(string processName)
+    {
+        _config.MusicProcesses.RemoveAll(process => string.Equals(process, processName, StringComparison.OrdinalIgnoreCase));
+        SaveAndApplyConfig();
     }
 
     private void SetDuckVolume()
@@ -131,9 +160,7 @@ public sealed class TrayApplicationContext : ApplicationContext
         }
 
         _config.DuckVolume = dialog.SelectedValue;
-        _config.Save();
-        _service.ReloadConfig(_config);
-        _notifyIcon.ContextMenuStrip = BuildMenu();
+        SaveAndApplyConfig();
     }
 
     private void ReloadConfig()
@@ -141,6 +168,18 @@ public sealed class TrayApplicationContext : ApplicationContext
         _config = AppConfig.LoadOrCreate();
         _service.ReloadConfig(_config);
         _notifyIcon.ContextMenuStrip = BuildMenu();
+        _statusForm.ApplyConfig(_config);
+    }
+
+    private void SaveAndApplyConfig(bool rebuildMenu = true)
+    {
+        _config.Save();
+        _service.ReloadConfig(_config);
+        if (rebuildMenu)
+        {
+            _notifyIcon.ContextMenuStrip = BuildMenu();
+        }
+        _statusForm.ApplyConfig(_config);
     }
 
     private void ServiceOnStateChanged(object? sender, DuckingState state)
