@@ -11,6 +11,9 @@ Adaptive Music is a Windows tray app that lowers selected music apps when other 
 - Ducks only configured music processes, not the system master volume.
 - Restores each music session to the volume captured before ducking.
 - Provides a live status window showing sessions, peaks, volume, and roles.
+- Can scan currently audible apps and add them to the music target list.
+- Can search running processes and manually add a music app.
+- Can change the ducked music volume percentage from the tray menu.
 - Stores settings in `%APPDATA%\AdaptiveMusic\config.json`.
 
 ## Default config
@@ -18,7 +21,7 @@ Adaptive Music is a Windows tray app that lowers selected music apps when other 
 ```json
 {
   "enabled": true,
-  "musicProcesses": ["Spotify", "cloudmusic", "foobar2000", "MusicBee", "AIMP"],
+  "musicProcesses": ["Spotify", "cloudmusic", "QQMusic", "foobar2000", "MusicBee", "AIMP"],
   "ignoredTriggerProcesses": ["AdaptiveMusic"],
   "duckVolume": 0.25,
   "triggerThreshold": 0.015,
@@ -51,3 +54,10 @@ dotnet run
 ```
 
 Double-click the tray icon to open the live status window.
+
+Tray actions:
+
+- `Scan Audible Apps as Music`: start music playback first, then run this to add audible apps as music targets.
+- `Add Music Process...`: search running processes and add selected apps as music targets.
+- `Duck Volume`: set the target volume percentage used while ducking.
+- `Open Config JSON`: edit advanced settings directly.

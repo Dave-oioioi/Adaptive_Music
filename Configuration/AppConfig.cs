@@ -7,7 +7,7 @@ namespace AdaptiveMusic.Configuration;
 public sealed class AppConfig
 {
     public bool Enabled { get; set; } = true;
-    public List<string> MusicProcesses { get; set; } = ["Spotify", "cloudmusic", "foobar2000", "MusicBee", "AIMP"];
+    public List<string> MusicProcesses { get; set; } = ["Spotify", "cloudmusic", "QQMusic", "foobar2000", "MusicBee", "AIMP"];
     public List<string> IgnoredTriggerProcesses { get; set; } = ["AdaptiveMusic"];
     public float DuckVolume { get; set; } = 0.25f;
     public float TriggerThreshold { get; set; } = 0.015f;

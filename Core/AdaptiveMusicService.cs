@@ -29,6 +29,21 @@ public sealed class AdaptiveMusicService : IDisposable
     public DuckingState State { get; private set; }
     public event EventHandler<DuckingState>? StateChanged;
 
+    public IReadOnlyList<string> GetAudibleProcessNames(float? threshold = null)
+    {
+        EnsureDevices();
+        RefreshSessions();
+        var minPeak = threshold ?? Config.TriggerThreshold;
+
+        return _sessions.Values
+            .Where(session => !session.Muted && !session.IsSystemSounds && session.Peak >= minPeak)
+            .Select(session => NormalizeProcessName(session.ProcessName))
+            .Where(name => !string.IsNullOrWhiteSpace(name) && !ProcessMatches(name, "AdaptiveMusic"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name)
+            .ToList();
+    }
+
     public void Start()
     {
         EnsureDevices();
