@@ -9,7 +9,7 @@ public sealed class AppConfig
     public bool Enabled { get; set; } = true;
     public List<string> MusicProcesses { get; set; } = ["Spotify", "cloudmusic", "QQMusic", "foobar2000", "MusicBee", "AIMP"];
     public List<string> IgnoredTriggerProcesses { get; set; } = ["AdaptiveMusic"];
-    public float DuckVolume { get; set; } = 0.25f;
+    public float DuckVolume { get; set; } = 0.10f;
     public float TriggerThreshold { get; set; } = 0.015f;
     public float MicrophoneThreshold { get; set; } = 0.02f;
     public int RestoreDelayMs { get; set; } = 1500;

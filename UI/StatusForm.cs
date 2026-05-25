@@ -29,8 +29,8 @@ public sealed class StatusForm : Form
         Text = "自适应音乐";
         StartPosition = FormStartPosition.CenterScreen;
         Width = 1120;
-        Height = 760;
-        MinimumSize = new Size(980, 640);
+        Height = 820;
+        MinimumSize = new Size(980, 700);
 
         var root = new TableLayoutPanel
         {
@@ -203,7 +203,7 @@ public sealed class StatusForm : Form
     private TabPage BuildOverviewTab()
     {
         var tab = new TabPage("概览");
-        var grid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(12) };
+        var grid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(8) };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48));
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52));
         grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));
@@ -220,7 +220,7 @@ public sealed class StatusForm : Form
 
     private Control CreateQuickStart()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, Padding = new Padding(12) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, Padding = new Padding(8) };
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
@@ -249,12 +249,12 @@ public sealed class StatusForm : Form
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42));
 
         var left = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2 };
-        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
+        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 120));
         left.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        var buttons = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, Padding = new Padding(0, 0, 8, 10) };
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        var buttons = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, Padding = new Padding(0, 0, 6, 6) };
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
         var scan = CreateActionButton("扫描正在发声的音乐");
         scan.Click += (_, _) => ScanAudibleRequested?.Invoke(this, EventArgs.Empty);
         var add = CreateActionButton("手动添加");
@@ -277,7 +277,7 @@ public sealed class StatusForm : Form
         {
             Dock = DockStyle.Fill,
             Text = "这里的应用会被降低音量。\r\n\r\n其他应用只会作为触发源，不会被修改音量。\r\n\r\n推荐只加入音乐播放器，例如 QQMusic、Spotify、网易云音乐。",
-            Padding = new Padding(12)
+            Padding = new Padding(8)
         };
 
         grid.Controls.Add(CreateGroup("会被降低音量的应用", left), 0, 0);
@@ -301,7 +301,7 @@ public sealed class StatusForm : Form
 
     private Control BuildVolumeSettings()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 6, Padding = new Padding(12) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 6, Padding = new Padding(8) };
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
@@ -444,7 +444,7 @@ public sealed class StatusForm : Form
         {
             Text = title,
             Dock = DockStyle.Fill,
-            Padding = new Padding(12)
+            Padding = new Padding(8)
         };
         content.Dock = DockStyle.Fill;
         group.Controls.Add(content);
@@ -457,7 +457,7 @@ public sealed class StatusForm : Form
         {
             Text = text,
             Dock = DockStyle.Fill,
-            Height = 40,
+            Height = 32,
             FlatStyle = FlatStyle.System,
             Margin = new Padding(0, 0, 0, 8)
         };
