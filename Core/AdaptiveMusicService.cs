@@ -1,8 +1,6 @@
 ﻿using AdaptiveMusic.Configuration;
 using AdaptiveMusic.Models;
 using NAudio.CoreAudioApi;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace AdaptiveMusic.Core;
 
@@ -19,12 +17,6 @@ public sealed class AdaptiveMusicService : IDisposable
     private DateTime _lastTriggerUtc = DateTime.MinValue;
     private bool _ducking;
     private bool _disposed;
-    private static IntPtr _keyboardHookHandle;
-    internal static DateTime LastKeyboardActivityUtc = DateTime.MinValue;
-    private static readonly NativeMethods.HookProc _hookProc = HookCallback;
-    private const int WH_KEYBOARD_LL = 13;
-    private const int WM_KEYDOWN = 0x0100;
-    private const int WM_SYSKEYDOWN = 0x0104;
 
     public AdaptiveMusicService(AppConfig config)
     {
@@ -73,7 +65,6 @@ public sealed class AdaptiveMusicService : IDisposable
         RefreshSessions();
         HealRememberedMusicVolumes();
         _timer.Start();
-        InstallKeyboardHook();
         Tick();
     }
 
@@ -224,15 +215,7 @@ public sealed class AdaptiveMusicService : IDisposable
                 session.IsSystemSounds));
         }
 
-        var keyboardActive = Config.DuckOnTyping
-            && DateTime.UtcNow - LastKeyboardActivityUtc < TimeSpan.FromMilliseconds(500);
-
-        if (keyboardActive)
-        {
-            triggers.Add("????");
-        }
-
-        var shouldDuck = Config.Enabled && musicTargets.Count > 0 && (triggers.Count > 0 || microphoneActive || keyboardActive);
+        var shouldDuck = Config.Enabled && musicTargets.Count > 0 && (triggers.Count > 0 || microphoneActive);
         if (shouldDuck)
         {
             _lastTriggerUtc = DateTime.UtcNow;
@@ -557,7 +540,6 @@ public sealed class AdaptiveMusicService : IDisposable
         }
 
         _disposed = true;
-        UninstallKeyboardHook();
         _timer.Stop();
         _timer.Dispose();
         RestoreTargets(force: true);
@@ -568,49 +550,5 @@ public sealed class AdaptiveMusicService : IDisposable
         }
 
         ResetDevices();
-    }
-
-    private void InstallKeyboardHook()
-    {
-        if (_keyboardHookHandle != IntPtr.Zero) return;
-        using var process = Process.GetCurrentProcess();
-        using var module = process.MainModule;
-        if (module is null) return;
-        _keyboardHookHandle = NativeMethods.SetWindowsHookEx(
-            WH_KEYBOARD_LL, _hookProc,
-            NativeMethods.GetModuleHandle(module.ModuleName), 0);
-    }
-
-    private void UninstallKeyboardHook()
-    {
-        if (_keyboardHookHandle == IntPtr.Zero) return;
-        NativeMethods.UnhookWindowsHookEx(_keyboardHookHandle);
-        _keyboardHookHandle = IntPtr.Zero;
-    }
-
-    private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
-    {
-        if (nCode >= 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
-        {
-            LastKeyboardActivityUtc = DateTime.UtcNow;
-        }
-        return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
-    }
-
-    internal static class NativeMethods
-    {
-        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
     }
 }

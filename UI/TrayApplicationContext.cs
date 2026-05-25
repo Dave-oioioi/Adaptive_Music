@@ -1,4 +1,4 @@
-using AdaptiveMusic.Configuration;
+﻿using AdaptiveMusic.Configuration;
 using AdaptiveMusic.Core;
 using AdaptiveMusic.Models;
 

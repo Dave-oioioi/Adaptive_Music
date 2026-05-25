@@ -1,4 +1,4 @@
-using AdaptiveMusic.Configuration;
+﻿using AdaptiveMusic.Configuration;
 using AdaptiveMusic.Models;
 
 namespace AdaptiveMusic.UI;
@@ -252,9 +252,9 @@ public sealed class StatusForm : Form
         left.RowStyles.Add(new RowStyle(SizeType.Absolute, 120));
         left.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         var buttons = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, Padding = new Padding(0, 0, 6, 6) };
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         var scan = CreateActionButton("扫描正在发声的音乐");
         scan.Click += (_, _) => ScanAudibleRequested?.Invoke(this, EventArgs.Empty);
         var add = CreateActionButton("手动添加");
