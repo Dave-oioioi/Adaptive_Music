@@ -1,17 +1,17 @@
-﻿# Adaptive Music — 自动压低音乐
+﻿# 无敌混音大王 — 自动压低音乐
 
 [![Release](https://img.shields.io/badge/Release-v1.0.0-%23D27800)](https://github.com/daweihou/AdaptiveMusic/releases/tag/Latest-Version)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE.txt)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B-lightgrey)]()
 
-[daweihou/AdaptiveMusic](https://github.com/daweihou/AdaptiveMusic)
+[Dave-oioioi/无敌混音大王](https://github.com/daweihou/AdaptiveMusic)
 
 ---
 
 ## 功能概述
 
-1. **自动压低音乐** — 检测到其他音频活动、麦克风输入或键盘输入时，自动降低音乐播放器音量
+1. **自动压低音乐** — 检测到其他音频、麦克风或键盘输入时，自动降低音乐播放器音量
 2. **进程级精准控制** — 只修改标记为"音乐应用"的进程音量，不影响系统主音量和触发源
 3. **智能恢复** — 触发停止后，通过淡入淡出平滑恢复每个音乐应用的原始音量
 4. **实时监控面板** — 控制台窗口实时显示所有音频会话的进程名、峰值、音量和角色
@@ -23,7 +23,7 @@
 
 ### 方式一：下载安装包（推荐）
 
-下载 [AdaptiveMusic-Setup-v1.0.0.exe](https://github.com/daweihou/AdaptiveMusic/releases/download/Latest-Version/AdaptiveMusic-Setup-v1.0.0.exe)，双击运行即可。
+下载 [无敌混音大王-Setup-v1.0.0.exe](https://github.com/daweihou/AdaptiveMusic/releases/download/Latest-Version/无敌混音大王-Setup-v1.0.0.exe)，双击运行即可。
 
 - 安装到 `%APPDATA%\.codex\skills\adaptive-music\scripts`
 - 配置自动保存到 `%APPDATA%\AdaptiveMusic\config.json`
