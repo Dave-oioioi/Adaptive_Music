@@ -17,10 +17,8 @@ public sealed class StatusForm : Form
     private readonly CheckBox _useFade = new();
     private readonly TrackBar _fadeDuration = new();
     private readonly Label _fadeDurationValue = new();
-    private readonly CheckBox _duckOnTyping = new();
     private readonly CheckBox _duckOnMicrophone = new();
     private readonly CheckBox _startWithWindows = new();
-    private readonly ComboBox _themeMode = new();
     private AppTheme _theme = AppThemes.Light;
     private bool _updating;
 
@@ -47,13 +45,11 @@ public sealed class StatusForm : Form
     }
 
     public event EventHandler<bool>? EnabledChangedByUser;
-    public event EventHandler<bool>? DuckOnTypingChangedByUser;
     public event EventHandler<bool>? DuckOnMicrophoneChangedByUser;
     public event EventHandler<bool>? StartWithWindowsChangedByUser;
     public event EventHandler<float>? DuckVolumeChangedByUser;
     public event EventHandler<bool>? UseFadeChangedByUser;
     public event EventHandler<int>? FadeDurationChangedByUser;
-    public event EventHandler<string>? ThemeModeChangedByUser;
     public event EventHandler? ScanAudibleRequested;
     public event EventHandler? AddProcessRequested;
     public event EventHandler<string>? RemoveMusicTargetRequested;
@@ -82,7 +78,7 @@ public sealed class StatusForm : Form
         }
 
         _updating = true;
-        _theme = AppThemes.Resolve(config);
+        _theme = AppThemes.Resolve();
         ApplyTheme();
 
         _enabled.Checked = config.Enabled;
@@ -91,10 +87,8 @@ public sealed class StatusForm : Form
         _useFade.Checked = config.UseFade;
         _fadeDuration.Value = Math.Clamp(config.FadeDurationMs, _fadeDuration.Minimum, _fadeDuration.Maximum);
         _fadeDurationValue.Text = $"{_fadeDuration.Value} ms";
-        _duckOnTyping.Checked = config.DuckOnTyping;
         _duckOnMicrophone.Checked = config.DuckOnMicrophone;
         _startWithWindows.Checked = startWithWindows;
-        _themeMode.SelectedItem = ToThemeLabel(config.ThemeMode);
 
         _musicTargets.Items.Clear();
         foreach (var process in config.MusicProcesses.OrderBy(p => p))
@@ -355,21 +349,11 @@ public sealed class StatusForm : Form
 
     private Control BuildSystemSettings()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 8, Padding = new Padding(16) };
-        for (var i = 0; i < 8; i++)
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, Padding = new Padding(16) };
+        for (var i = 0; i < 5; i++)
         {
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, i is 5 or 6 or 7 ? 48 : 38));
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, i >= 2 ? 48 : 38));
         }
-
-        _duckOnTyping.Text = "打字键入时降低音乐";
-        _duckOnTyping.Dock = DockStyle.Fill;
-        _duckOnTyping.CheckedChanged += (_, _) =>
-        {
-            if (!_updating)
-            {
-                DuckOnTypingChangedByUser?.Invoke(this, _duckOnTyping.Checked);
-            }
-        };
 
         _duckOnMicrophone.Text = "麦克风输入时降低音乐";
         _duckOnMicrophone.Dock = DockStyle.Fill;
@@ -391,17 +375,6 @@ public sealed class StatusForm : Form
             }
         };
 
-        _themeMode.Dock = DockStyle.Fill;
-        _themeMode.DropDownStyle = ComboBoxStyle.DropDownList;
-        _themeMode.Items.AddRange(["跟随系统", "浅色", "深色"]);
-        _themeMode.SelectedIndexChanged += (_, _) =>
-        {
-            if (!_updating && _themeMode.SelectedItem is string selected)
-            {
-                ThemeModeChangedByUser?.Invoke(this, FromThemeLabel(selected));
-            }
-        };
-
         var openConfig = CreateActionButton("打开配置");
         openConfig.Click += (_, _) => OpenConfigRequested?.Invoke(this, EventArgs.Empty);
         var reload = CreateActionButton("重载配置");
@@ -409,14 +382,11 @@ public sealed class StatusForm : Form
         var reset = CreateActionButton("恢复默认");
         reset.Click += (_, _) => ResetDefaultsRequested?.Invoke(this, EventArgs.Empty);
 
-        panel.Controls.Add(_duckOnTyping, 0, 0);
-        panel.Controls.Add(_duckOnMicrophone, 0, 1);
-        panel.Controls.Add(_startWithWindows, 0, 2);
-        panel.Controls.Add(new Label { Text = "外观", Dock = DockStyle.Fill }, 0, 3);
-        panel.Controls.Add(_themeMode, 0, 4);
-        panel.Controls.Add(openConfig, 0, 5);
-        panel.Controls.Add(reload, 0, 6);
-        panel.Controls.Add(reset, 0, 7);
+        panel.Controls.Add(_duckOnMicrophone, 0, 0);
+        panel.Controls.Add(_startWithWindows, 0, 1);
+        panel.Controls.Add(openConfig, 0, 2);
+        panel.Controls.Add(reload, 0, 3);
+        panel.Controls.Add(reset, 0, 4);
         return panel;
     }
 
@@ -513,22 +483,4 @@ public sealed class StatusForm : Form
             : "先播放音乐，然后到“应用”页扫描或手动添加音乐播放器。";
     }
 
-    private static string ToThemeLabel(string? mode)
-    {
-        return mode?.Equals("Light", StringComparison.OrdinalIgnoreCase) == true
-            ? "浅色"
-            : mode?.Equals("Dark", StringComparison.OrdinalIgnoreCase) == true
-                ? "深色"
-                : "跟随系统";
-    }
-
-    private static string FromThemeLabel(string label)
-    {
-        return label switch
-        {
-            "浅色" => "Light",
-            "深色" => "Dark",
-            _ => "System"
-        };
-    }
 }

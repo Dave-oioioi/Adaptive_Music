@@ -183,11 +183,9 @@ public sealed class AdaptiveMusicService : IDisposable
             var processName = NormalizeProcessName(session.ProcessName);
             var isMusic = IsConfiguredMusicTarget(session);
             var ignored = Config.IgnoredTriggerProcesses.Any(target => ProcessMatches(processName, target));
-            var isTypingTrigger = Config.TypingTriggerProcesses.Any(target => ProcessMatches(processName, target));
             var isTrigger = Config.Enabled
                 && !isMusic
                 && !ignored
-                && (Config.DuckOnTyping || !isTypingTrigger)
                 && !session.IsSystemSounds
                 && !session.Muted
                 && session.Peak >= Config.TriggerThreshold;

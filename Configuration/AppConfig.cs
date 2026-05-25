@@ -18,10 +18,7 @@ public sealed class AppConfig
     public bool UseFade { get; set; } = true;
     public int FadeDurationMs { get; set; } = 280;
     public bool DuckOnMicrophone { get; set; } = true;
-    public bool DuckOnTyping { get; set; } = true;
-    public List<string> TypingTriggerProcesses { get; set; } = ["TextInputHost"];
     public Dictionary<string, float> NormalMusicVolumes { get; set; } = [];
-    public string ThemeMode { get; set; } = "System";
 
     [JsonIgnore]
     public static string ConfigDirectory =>

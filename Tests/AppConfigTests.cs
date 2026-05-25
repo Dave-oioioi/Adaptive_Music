@@ -24,7 +24,7 @@ public class AppConfigTests
         {
             DuckVolume = 0.3f,
             PollIntervalMs = 200,
-            ThemeMode = "Dark"
+            RestoreDelayMs = 900
         };
         original.Save();
 
@@ -32,7 +32,7 @@ public class AppConfigTests
 
         Assert.Equal(0.3f, loaded.DuckVolume);
         Assert.Equal(200, loaded.PollIntervalMs);
-        Assert.Equal("Dark", loaded.ThemeMode);
+        Assert.Equal(900, loaded.RestoreDelayMs);
     }
 
     [Fact]

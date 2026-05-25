@@ -67,11 +67,6 @@ public sealed class TrayApplicationContext : ApplicationContext
             _config.Enabled = enabled;
             SaveAndApplyConfig();
         };
-        _statusForm.DuckOnTypingChangedByUser += (_, enabled) =>
-        {
-            _config.DuckOnTyping = enabled;
-            SaveAndApplyConfig(rebuildMenu: false);
-        };
         _statusForm.DuckOnMicrophoneChangedByUser += (_, enabled) =>
         {
             _config.DuckOnMicrophone = enabled;
@@ -90,11 +85,6 @@ public sealed class TrayApplicationContext : ApplicationContext
         _statusForm.FadeDurationChangedByUser += (_, fadeDurationMs) =>
         {
             _config.FadeDurationMs = fadeDurationMs;
-            SaveAndApplyConfig(rebuildMenu: false);
-        };
-        _statusForm.ThemeModeChangedByUser += (_, themeMode) =>
-        {
-            _config.ThemeMode = themeMode;
             SaveAndApplyConfig(rebuildMenu: false);
         };
         _statusForm.StartWithWindowsChangedByUser += (_, enabled) =>
@@ -211,7 +201,7 @@ public sealed class TrayApplicationContext : ApplicationContext
     private void ResetDefaults()
     {
         var confirm = MessageBox.Show(
-            "确定恢复默认设置吗？音乐应用列表、音量比例、触发选项和外观设置都会恢复默认。",
+            "确定恢复默认设置吗？音乐应用列表、音量比例和触发选项都会恢复默认。",
             "恢复默认设置",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Warning);

@@ -1,6 +1,3 @@
-using AdaptiveMusic.Configuration;
-using Microsoft.Win32;
-
 namespace AdaptiveMusic.UI;
 
 internal sealed record AppTheme(
@@ -15,14 +12,7 @@ internal sealed record AppTheme(
 
 internal static class AppThemes
 {
-    public static AppTheme Resolve(AppConfig config)
-    {
-        var mode = config.ThemeMode?.Trim();
-        var dark = mode?.Equals("Dark", StringComparison.OrdinalIgnoreCase) == true ||
-            (mode?.Equals("Light", StringComparison.OrdinalIgnoreCase) != true && SystemPrefersDark());
-
-        return dark ? Dark : Light;
-    }
+    public static AppTheme Resolve() => Light;
 
     public static readonly AppTheme Dark = new(
         true,
@@ -44,17 +34,4 @@ internal static class AppThemes
         Color.FromArgb(235, 247, 240),
         Color.FromArgb(255, 244, 232));
 
-    private static bool SystemPrefersDark()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            var value = key?.GetValue("AppsUseLightTheme");
-            return value is int intValue && intValue == 0;
-        }
-        catch
-        {
-            return true;
-        }
-    }
 }

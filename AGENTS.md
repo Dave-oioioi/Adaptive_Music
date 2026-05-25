@@ -20,3 +20,17 @@
 - 修改核心音频逻辑后，需要测试降低和恢复是否正常。
 - 修改 UI 后，需要启动应用确认窗口可打开、主要控件可见且文字不遮挡。
 - 修改配置项后，需要确认现有 `%APPDATA%\AdaptiveMusic\config.json` 能兼容加载。
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `Dave-oioioi/Adaptive_Music`. See `Docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default five-label vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `Docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo; read root `CONTEXT.md` and `Docs/adr/` when they exist. See `Docs/agents/domain.md`.
