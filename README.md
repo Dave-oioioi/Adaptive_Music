@@ -1,11 +1,11 @@
-﻿# 无敌混音大王 — 自动压低音乐
+﻿# Adaptive_Music — 无敌混音王
 
-[![Release](https://img.shields.io/badge/Release-v1.0.0-%23D27800)](https://github.com/daweihou/AdaptiveMusic/releases/tag/Latest-Version)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-%23D27800)](https://github.com/Dave-oioioi/Adaptive_Music/releases)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE.txt)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B-lightgrey)]()
 
-[Dave-oioioi/无敌混音大王](https://github.com/daweihou/AdaptiveMusic)
+[Dave-oioioi/Adaptive_Music](https://github.com/Dave-oioioi/Adaptive_Music)
 
 ---
 
@@ -23,9 +23,9 @@
 
 ### 方式一：下载安装包（推荐）
 
-下载 [无敌混音大王-Setup-v1.0.0.exe](https://github.com/daweihou/AdaptiveMusic/releases/download/Latest-Version/无敌混音大王-Setup-v1.0.0.exe)，双击运行即可。
+下载 [AdaptiveMusic-Setup-v1.0.0.exe](https://github.com/Dave-oioioi/Adaptive_Music/releases/download/v1.0.0/AdaptiveMusic-Setup-v1.0.0.exe)，双击运行即可。
 
-- 安装到 `%APPDATA%\.codex\skills\adaptive-music\scripts`
+- 绿色便携，解压即用，配置自动保存
 - 配置自动保存到 `%APPDATA%\AdaptiveMusic\config.json`
 - 开机自启可在控制台"设置"页一键开启
 
@@ -33,7 +33,7 @@
 
 ```powershell
 # 需要 .NET 9.0 SDK
-git clone https://github.com/daweihou/AdaptiveMusic.git
+git clone https://github.com/Dave-oioioi/Adaptive_Music.git
 cd AdaptiveMusic
 dotnet restore
 dotnet build
@@ -110,4 +110,4 @@ dotnet run
 
 ## License
 
-MIT © [daweihou](https://github.com/daweihou)
+MIT © [Dave-oioioi](https://github.com/Dave-oioioi)
